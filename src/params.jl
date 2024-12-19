@@ -34,9 +34,14 @@ Grads() = Grads(IdDict())
 
 @forward Grads.grads Base.setindex!, Base.haskey, Base.length, Base.iterate
 
-Grads(ps::Params) = Grads(IdDict(tracker(p) => init_grad(data(p)) for p in ps))
+function Grads(ps::Params)
+  return Grads(IdDict(tracker(p) => init_grad(data(p)) for p in ps))
+end
 
-Base.getindex(g::Grads, x::Tracked) = g.grads[x]
+function Base.getindex(g::Grads, x::Tracked)
+  haskey(g.grads, x) || return init_grad(x.grad)
+  return g.grads[x]
+end
 
 function Base.getindex(g::Grads, x)
   istracked(x) || error("Object not tracked: $x")
